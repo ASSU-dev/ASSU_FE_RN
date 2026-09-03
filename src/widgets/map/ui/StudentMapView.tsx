@@ -46,6 +46,13 @@ const SHEET_TOP_MARGIN_BELOW_INSET = 123;
 /** 플로팅 카드/현재위치 버튼과 시트 사이 간격 */
 const SHEET_GAP = 12;
 
+type MapCenter = { lat: number; lng: number };
+
+interface VisibleViewport {
+	bounds: MapBounds;
+	center: MapCenter | null;
+}
+
 type StudentMapStoreTarget = Pick<StoreMarker, "id" | "name">;
 
 interface StudentMapViewProps {
@@ -77,6 +84,7 @@ export function StudentMapView({
 	const kakaoRef = useRef<KakaoMapHandle>(null);
 	const sheetRef = useRef<SnapBottomSheetRef>(null);
 	const suppressNextBoundsRef = useRef(false);
+	const deliberatelyPannedRef = useRef(false);
 	const insets = useSafeAreaInsets();
 	const { center, myLocation, heading } = useUserLocation();
 	const { storeCategory, adminId, toggleAdminId } = useMapFilterStore();
@@ -94,9 +102,14 @@ export function StudentMapView({
 			console.log("[StudentMapView] 학생회 칩:", admins);
 	}, [admins]);
 
-	const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
+	const [visibleViewport, setVisibleViewport] =
+		useState<VisibleViewport | null>(null);
 	// 맵이 idle 이벤트를 보내기 전까지는 GPS 기반 초기 viewport 사용
-	const viewport = mapBounds ?? (center ? toViewport(center) : null);
+	const viewport = resolveViewport(
+		center,
+		visibleViewport,
+		deliberatelyPannedRef.current,
+	);
 	// 지도 마커는 현재 화면 범위와 카테고리 필터를 반영한다.
 	const { data: markerStores = [] } = useNearbyStores(viewport, {
 		storeCategory: storeCategory ?? undefined,
@@ -125,6 +138,7 @@ export function StudentMapView({
 		if (!initialStoreId || !initialLat || !initialLng) return;
 		setSelectedStoreId(initialStoreId);
 		sheetRef.current?.snapToIndex(0);
+		deliberatelyPannedRef.current = true;
 		kakaoRef.current?.panTo(initialLat, initialLng);
 	}, [initialStoreId, initialLat, initialLng]);
 
@@ -147,6 +161,7 @@ export function StudentMapView({
 
 	const handleFocusToMyLocation = () => {
 		if (!myLocation) return;
+		deliberatelyPannedRef.current = true;
 		kakaoRef.current?.panTo(myLocation.lat, myLocation.lng);
 	};
 
@@ -158,6 +173,7 @@ export function StudentMapView({
 		const store = partnerMarkerStores.find((s) => s.id === markerId);
 		if (store) {
 			suppressNextBoundsRef.current = true;
+			deliberatelyPannedRef.current = true;
 			kakaoRef.current?.panTo(store.latitude, store.longitude);
 		}
 	};
@@ -232,9 +248,16 @@ export function StudentMapView({
 						suppressNextBoundsRef.current = false;
 						return;
 					}
-					setMapBounds((prev) =>
-						isBoundsShiftedEnough(prev, bounds) ? bounds : prev,
-					);
+					setVisibleViewport((prev) => {
+						if (
+							prev &&
+							isSameCenter(prev.center, center) &&
+							!isBoundsShiftedEnough(prev.bounds, bounds)
+						) {
+							return prev;
+						}
+						return { bounds, center };
+					});
 				}}
 			/>
 			<MapLocateButton
@@ -316,6 +339,29 @@ export function StudentMapView({
 			</SnapBottomSheet>
 		</View>
 	);
+}
+
+function resolveViewport(
+	center: MapCenter | null,
+	visibleViewport: VisibleViewport | null,
+	preserveVisibleViewport: boolean,
+): MapBounds | null {
+	if (!center) return null;
+	if (
+		visibleViewport &&
+		(preserveVisibleViewport || isSameCenter(visibleViewport.center, center))
+	) {
+		return visibleViewport.bounds;
+	}
+	return toViewport(center);
+}
+
+function isSameCenter(
+	left: MapCenter | null,
+	right: MapCenter | null,
+): boolean {
+	if (!left || !right) return left === right;
+	return left.lat === right.lat && left.lng === right.lng;
 }
 
 /** NW 코너 기준 약 500m(≈0.005°) 이상 이동했을 때만 true — 소폭 이동 re-fetch 방지 */
