@@ -494,6 +494,17 @@ export function useNearbyStores(
 		],
 		queryFn: () => fetchNearbyStores(viewport as MapViewport, filter),
 		enabled: viewport !== null,
+		placeholderData: (previousData, previousQuery) => {
+			// 같은 필터에서 지도 범위만 바뀌면 조회 중에도 기존 마커를 유지한다.
+			if (
+				viewport === null ||
+				previousQuery?.queryKey[3] !== (filter?.storeCategory ?? null) ||
+				previousQuery?.queryKey[4] !== (filter?.adminId ?? null)
+			) {
+				return undefined;
+			}
+			return previousData;
+		},
 		staleTime: 1000 * 60,
 	});
 }

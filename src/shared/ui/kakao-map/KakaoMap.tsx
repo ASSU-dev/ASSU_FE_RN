@@ -286,7 +286,7 @@ function buildMapHtml(appKey: string, boundsTrackingEnabled: boolean): string {
     var map;
     var boundsTrackingEnabled = ${boundsTrackingEnabled};
     var myLocationOverlay = null;
-    var storeMarkers = [];
+    var storeMarkers = Object.create(null);
 
     function createMyLocationOverlay(position) {
       var content =
@@ -356,14 +356,16 @@ function buildMapHtml(appKey: string, boundsTrackingEnabled: boolean): string {
       renderStoreMarkers();
     };
 
-    function clearStoreMarkers() {
-      storeMarkers.forEach(function(marker) { marker.setMap(null); });
-      storeMarkers = [];
+    // 같은 ID와 표시 내용이면 기존 마커를 지도에 붙인 채 재사용한다.
+    function retainStoreMarker(nextMarkers, key, signature, createMarker) {
+      var previous = storeMarkers[key];
+      nextMarkers[key] = previous && previous.signature === signature
+        ? previous
+        : { signature: signature, marker: createMarker() };
     }
 
     function renderStoreMarkers() {
-      clearStoreMarkers();
-
+      var nextMarkers = Object.create(null);
       var singles = [];
       var clusterable = [];
       storeData.forEach(function(markerData) {
@@ -375,14 +377,42 @@ function buildMapHtml(appKey: string, boundsTrackingEnabled: boolean): string {
         }
       });
 
+      // 응답 순서가 바뀌어도 같은 매장들은 같은 순서로 클러스터링한다.
+      clusterable.sort(function(left, right) {
+        var leftId = String(left.id);
+        var rightId = String(right.id);
+        return leftId < rightId ? -1 : leftId > rightId ? 1 : 0;
+      });
       buildClusters(clusterable).forEach(function(cluster) {
         if (cluster.items.length > 1) {
-          renderClusterMarker(cluster);
+          var key = 'cluster:' + JSON.stringify(cluster.items.map(function(item) { return String(item.id); }));
+          var signature = JSON.stringify(cluster.items.map(function(item) { return [item.latitude, item.longitude]; }));
+          retainStoreMarker(nextMarkers, key, signature, function() {
+            return renderClusterMarker(cluster);
+          });
         } else {
-          renderSingleMarker(cluster.items[0]);
+          singles.push(cluster.items[0]);
         }
       });
-      singles.forEach(renderSingleMarker);
+      singles.forEach(function(markerData) {
+        var key = 'store:' + String(markerData.id);
+        var signature = JSON.stringify([
+          markerData.latitude, markerData.longitude, markerData.name,
+          markerData.category, markerData.benefit, markerData.selected === true,
+          markerData.categoryMarker === true, markerData.isPartnerMarker === true
+        ]);
+        retainStoreMarker(nextMarkers, key, signature, function() {
+          return renderSingleMarker(markerData);
+        });
+      });
+
+      // 새 마커를 붙인 뒤, 사라졌거나 교체된 항목만 제거한다.
+      Object.keys(storeMarkers).forEach(function(key) {
+        if (storeMarkers[key] !== nextMarkers[key]) {
+          storeMarkers[key].marker.setMap(null);
+        }
+      });
+      storeMarkers = nextMarkers;
     }
 
     function buildClusters(items) {
@@ -409,7 +439,7 @@ function buildMapHtml(appKey: string, boundsTrackingEnabled: boolean): string {
     function renderSingleMarker(markerData) {
       if (markerData.categoryMarker) return renderCategoryMarker(markerData);
       if (markerData.isPartnerMarker) return renderPartnerMarker(markerData);
-      renderDefaultMarker(markerData);
+      return renderDefaultMarker(markerData);
     }
 
     function renderCategoryMarker(markerData) {
@@ -457,7 +487,7 @@ function buildMapHtml(appKey: string, boundsTrackingEnabled: boolean): string {
         zIndex: selected ? 20 : 6
       });
       overlay.setMap(map);
-      storeMarkers.push(overlay);
+      return overlay;
     }
 
     function renderClusterMarker(cluster) {
@@ -485,7 +515,7 @@ function buildMapHtml(appKey: string, boundsTrackingEnabled: boolean): string {
         zIndex: 4
       });
       overlay.setMap(map);
-      storeMarkers.push(overlay);
+      return overlay;
     }
 
     function renderPartnerMarker(markerData) {
@@ -531,7 +561,7 @@ function buildMapHtml(appKey: string, boundsTrackingEnabled: boolean): string {
         zIndex: selected ? 20 : 5
       });
       overlay.setMap(map);
-      storeMarkers.push(overlay);
+      return overlay;
     }
 
     function renderDefaultMarker(markerData) {
@@ -541,7 +571,7 @@ function buildMapHtml(appKey: string, boundsTrackingEnabled: boolean): string {
         postMarkerPress(markerData.id);
       });
       marker.setMap(map);
-      storeMarkers.push(marker);
+      return marker;
     }
 
     function initMap() {
