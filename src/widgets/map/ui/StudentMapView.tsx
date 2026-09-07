@@ -21,6 +21,7 @@ import {
 import { useNearbyStores } from "@/features/map-search";
 import { useGetUsablePartnershipQuery } from "@/features/store-list/api/useGetUsablePartnershipQuery";
 import type { UsablePartnershipDTO } from "@/shared/api";
+import type { LatLng } from "@/shared/types/map";
 import {
 	BottomSheetFlatList,
 	SnapBottomSheet,
@@ -46,11 +47,9 @@ const SHEET_TOP_MARGIN_BELOW_INSET = 123;
 /** 플로팅 카드/현재위치 버튼과 시트 사이 간격 */
 const SHEET_GAP = 12;
 
-type MapCenter = { lat: number; lng: number };
-
 interface VisibleViewport {
 	bounds: MapBounds;
-	center: MapCenter | null;
+	center: LatLng | null;
 }
 
 type StudentMapStoreTarget = Pick<StoreMarker, "id" | "name">;
@@ -342,7 +341,7 @@ export function StudentMapView({
 }
 
 function resolveViewport(
-	center: MapCenter | null,
+	center: LatLng | null,
 	visibleViewport: VisibleViewport | null,
 	preserveVisibleViewport: boolean,
 ): MapBounds | null {
@@ -356,10 +355,7 @@ function resolveViewport(
 	return toViewport(center);
 }
 
-function isSameCenter(
-	left: MapCenter | null,
-	right: MapCenter | null,
-): boolean {
+function isSameCenter(left: LatLng | null, right: LatLng | null): boolean {
 	if (!left || !right) return left === right;
 	return left.lat === right.lat && left.lng === right.lng;
 }

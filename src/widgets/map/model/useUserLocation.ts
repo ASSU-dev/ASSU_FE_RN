@@ -2,10 +2,10 @@ import * as Location from "expo-location";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 
-const SOONGSIL = { lat: 37.4963, lng: 126.9572 };
-const HEADING_THRESHOLD_DEG = 5;
+import { SOONGSIL } from "@/shared/config/map";
+import type { LatLng } from "@/shared/types/map";
 
-type LatLng = { lat: number; lng: number };
+const HEADING_THRESHOLD_DEG = 5;
 
 export function useUserLocation() {
 	const [center, setCenter] = useState<LatLng | null>(null);

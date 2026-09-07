@@ -5,6 +5,7 @@ import type {
 } from "@/entities/store";
 import type { BaseResponse } from "@/shared/api";
 import { apiInstance } from "@/shared/api";
+import { SOONGSIL_VIEWPORT } from "@/shared/config/map";
 import {
 	getString,
 	isRecord,
@@ -14,17 +15,6 @@ import {
 	toStoreMarker,
 } from "../lib/mapSearchMappers";
 import type { MapViewport, NearbyStoresFilter } from "../model/types";
-
-const SOONGSIL_VIEWPORT: MapViewport = {
-	lng1: 126.9472,
-	lat1: 37.5063,
-	lng2: 126.9672,
-	lat2: 37.5063,
-	lng3: 126.9672,
-	lat3: 37.4863,
-	lng4: 126.9472,
-	lat4: 37.4863,
-};
 
 async function fetchNearbyRaw(
 	viewport: MapViewport,

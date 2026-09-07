@@ -12,7 +12,9 @@ import WebView, {
 	type WebViewProps,
 } from "react-native-webview";
 
+import { SOONGSIL } from "@/shared/config/map";
 import { colorTokens } from "@/shared/styles/tokens";
+import type { LatLng, MapBounds } from "@/shared/types/map";
 import { categoryMarkerSvgs } from "./mapMarkerSvgs";
 import { partnerMarkerSvg } from "./partnerMarkerSvg";
 
@@ -26,16 +28,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 
 type KakaoWebViewSource = NonNullable<WebViewProps["source"]>;
 
-export type MapBounds = {
-	lng1: number;
-	lat1: number;
-	lng2: number;
-	lat2: number;
-	lng3: number;
-	lat3: number;
-	lng4: number;
-	lat4: number;
-};
+export type { MapBounds } from "@/shared/types/map";
 
 const MAP_BOUNDS_KEYS = [
 	"lng1",
@@ -58,8 +51,8 @@ function isMapBounds(value: unknown): value is MapBounds {
 }
 
 type KakaoMapProps = {
-	initialCenter?: { lat: number; lng: number };
-	myLocation?: { lat: number; lng: number } | null;
+	initialCenter?: LatLng;
+	myLocation?: LatLng | null;
 	heading?: number | null;
 	markers?: KakaoMapMarker[];
 	partnerMarkersEnabled?: boolean;
@@ -90,8 +83,6 @@ export type KakaoMapMarker = {
 	benefit?: string;
 };
 
-const SOONGSIL = { lat: 37.4963, lng: 126.9572 };
-
 export const KakaoMap = forwardRef<KakaoMapHandle, KakaoMapProps>(
 	function KakaoMap(
 		{
@@ -114,7 +105,7 @@ export const KakaoMap = forwardRef<KakaoMapHandle, KakaoMapProps>(
 		const prevMarkersRef = useRef<string>("");
 		const [isMapReady, setIsMapReady] = useState(false);
 		const boundsTrackingEnabled = onRegionChange !== undefined;
-		const pendingPanRef = useRef<{ lat: number; lng: number } | null>(null);
+		const pendingPanRef = useRef<LatLng | null>(null);
 		// Set to true after the first deliberate panTo — prevents GPS re-centering from overriding it.
 		const deliberatelyPannedRef = useRef(false);
 		const webViewSource = useMemo<KakaoWebViewSource | null>(() => {
