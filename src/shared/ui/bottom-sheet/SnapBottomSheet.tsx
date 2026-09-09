@@ -2,6 +2,7 @@ import BottomSheet from "@gorhom/bottom-sheet";
 import type { ReactNode } from "react";
 import { forwardRef } from "react";
 import type { StyleProp, ViewStyle } from "react-native";
+import type { SharedValue } from "react-native-reanimated";
 
 import { colorTokens } from "@/shared/styles/tokens";
 
@@ -16,6 +17,8 @@ interface SnapBottomSheetProps {
 	onChange?: (index: number) => void;
 	/** 컨테이너 상단에서 시트가 넘을 수 없는 한계선(px) — "100%" 스냅의 상한 */
 	topInset?: number;
+	animatedPosition?: SharedValue<number>;
+	handleIndicatorStyle?: StyleProp<ViewStyle>;
 	enablePanDownToClose?: boolean;
 	backgroundStyle?: StyleProp<ViewStyle>;
 	children: ReactNode;
@@ -35,6 +38,8 @@ export const SnapBottomSheet = forwardRef<
 		index = 0,
 		onChange,
 		topInset,
+		animatedPosition,
+		handleIndicatorStyle,
 		enablePanDownToClose = false,
 		backgroundStyle,
 		children,
@@ -48,12 +53,16 @@ export const SnapBottomSheet = forwardRef<
 			snapPoints={snapPoints}
 			onChange={onChange}
 			topInset={topInset}
+			animatedPosition={animatedPosition}
 			enableDynamicSizing={false}
 			enablePanDownToClose={enablePanDownToClose}
-			handleIndicatorStyle={{
-				backgroundColor: colorTokens.neutralVariant,
-				width: 36,
-			}}
+			handleIndicatorStyle={[
+				{
+					backgroundColor: colorTokens.neutralVariant,
+					width: 36,
+				},
+				handleIndicatorStyle,
+			]}
 			backgroundStyle={[
 				{
 					backgroundColor: colorTokens.canvas,

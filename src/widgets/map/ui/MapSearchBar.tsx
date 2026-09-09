@@ -6,12 +6,14 @@ import { shadows } from "@/shared/styles/shadows";
 
 interface MapSearchBarProps {
 	placeholder?: string;
+	withShadow?: boolean;
 	onPress: () => void;
 }
 
 export function MapSearchBar({
 	placeholder = "찾으시는 제휴 가게가 없나요?",
 	onPress,
+	withShadow = true,
 }: MapSearchBarProps) {
 	const insets = useSafeAreaInsets();
 
@@ -23,7 +25,7 @@ export function MapSearchBar({
 			<Pressable
 				onPress={onPress}
 				className="flex-row items-center gap-gutter rounded-[8px] bg-neutral p-gutter"
-				style={shadows.neutral}
+				style={withShadow ? shadows.neutral : undefined}
 			>
 				<LocationIcon width={14} height={18} />
 				<Text className="font-regular text-sm leading-caption tracking-caption text-content-secondary">
