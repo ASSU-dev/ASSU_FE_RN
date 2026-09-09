@@ -134,9 +134,10 @@ export function StudentMapView({
 	const { data: markerStores = [] } = useNearbyStores(viewport, {
 		storeCategory: storeCategory ?? undefined,
 	});
-	// 시트 리스트는 지도 범위와 무관하게 이용 가능한 전체 제휴를 조회한다.
+	// 시트 리스트는 지도 범위와 무관하게 카테고리·학생회 필터를 적용한다.
 	const { data: partnershipResponse } = useGetUsablePartnershipQuery({
 		all: true,
+		storeCategory: storeCategory ?? undefined,
 		adminId: adminId ? Number(adminId) : undefined,
 	});
 	const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
