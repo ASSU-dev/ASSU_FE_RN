@@ -377,11 +377,15 @@ export function StudentMapView({
 				index={0}
 				topInset={insets.top + SHEET_TOP_MARGIN_BELOW_INSET}
 			>
-				<AdminChipRow
-					admins={admins}
-					selectedAdminId={adminId}
-					onToggleAdmin={toggleAdminId}
-				/>
+				{admins.length > 0 && (
+					<View className="shrink-0 bg-canvas pb-gutter">
+						<AdminChipRow
+							admins={admins}
+							selectedAdminId={adminId}
+							onToggleAdmin={toggleAdminId}
+						/>
+					</View>
+				)}
 				<BottomSheetFlatList
 					data={partnerListStores}
 					keyExtractor={(partnership, index) =>
