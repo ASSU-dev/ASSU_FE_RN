@@ -22,7 +22,6 @@ import {
 	LocationIcon,
 } from "@/shared/assets/icons";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
-import { shadows } from "@/shared/styles/shadows";
 import { colorTokens } from "@/shared/styles/tokens";
 import { SearchResultCard } from "@/widgets/map";
 
@@ -71,21 +70,27 @@ export function MapSearchPage({
 	return (
 		<Pressable className="flex-1 bg-canvas" onPress={Keyboard.dismiss}>
 			<View
-				className="flex-row items-center gap-gutter bg-canvas px-card-p pb-3"
-				style={{ ...shadows.neutral, paddingTop: insets.top + 12 }}
+				className="flex-row items-center gap-0.5 bg-canvas px-card-p pb-3"
+				style={{ paddingTop: insets.top + 11 }}
 			>
 				<Pressable onPress={() => router.back()} hitSlop={8}>
 					<BackArrowIcon width={24} height={24} />
 				</Pressable>
-				<View className="flex-1 flex-row items-center gap-gutter rounded-[8px] bg-neutral p-gutter">
-					<LocationIcon width={14} height={18} />
+				<View className="flex-1 flex-row items-center gap-1 rounded-[8px] bg-neutral p-gutter">
+					<View className="h-5 w-5">
+						<LocationIcon
+							width={14}
+							height={18}
+							style={{ position: "absolute", left: 10 / 3, top: 5 / 3 }}
+						/>
+					</View>
 					<View className="flex-1 justify-center" style={{ height: 21 }}>
 						<TextInput
 							ref={inputRef}
 							autoFocus
 							value={query}
 							onChangeText={setQuery}
-							className="w-full font-regular text-sm tracking-caption text-content-primary"
+							className="w-full font-regular text-sm leading-caption tracking-caption text-content-primary"
 							placeholder="찾으시는 제휴 가게가 없나요?"
 							placeholderTextColor={colorTokens.contentSecondary}
 							returnKeyType="search"
@@ -144,13 +149,24 @@ export function MapSearchPage({
 			) : (
 				showPopular &&
 				popularStores.length > 0 && (
-					<View className="px-[14px] pt-5">
-						<Text className="mb-4 font-semibold text-[15px] leading-[1.3] text-content-primary">
-							{"🔥 지금 많이 찾는 "}
-							<Text className="text-primary">제휴</Text>
-							{" 매장"}
-						</Text>
-						<View className="gap-5">
+					<View className="px-screen-m pt-[17px]">
+						<View className="mb-[11px] flex-row items-start gap-2">
+							<Text
+								className="font-medium text-md leading-[1.3] text-content-primary"
+								style={{ includeFontPadding: false }}
+							>
+								🔥
+							</Text>
+							<Text
+								className="font-semibold text-md leading-[1.3] text-content-primary"
+								style={{ includeFontPadding: false }}
+							>
+								{"지금 많이 찾는 "}
+								<Text className="text-primary">제휴</Text>
+								{" 매장"}
+							</Text>
+						</View>
+						<View className="gap-5 px-[14px] py-4">
 							{popularStores.map((store, index) => (
 								<PopularStoreRow
 									key={store.id}
@@ -193,10 +209,14 @@ function PopularStoreRow({
 		<Pressable onPress={onPress} className="flex-row items-center gap-[8px]">
 			<Text
 				className={`w-[17px] font-regular text-[14px] leading-[1.3] tracking-[-0.126px] ${rank <= 3 ? "text-primary" : "text-content-secondary"}`}
+				style={{ includeFontPadding: false }}
 			>
 				{rank}
 			</Text>
-			<Text className="font-regular text-[14px] leading-[1.3] text-content-primary">
+			<Text
+				className="font-regular text-[14px] leading-[1.3] text-content-primary"
+				style={{ includeFontPadding: false }}
+			>
 				{store.name}
 			</Text>
 		</Pressable>
