@@ -24,7 +24,7 @@ function isMapBounds(value: unknown): value is MapBounds {
 }
 
 export function buildPanToScript(lat: number, lng: number): string {
-	return `map.panTo(new kakao.maps.LatLng(${lat}, ${lng})); true;`;
+	return `map.jump(new kakao.maps.LatLng(${lat}, ${lng}), map.getLevel(), { animate: { duration: 650 } }); true;`;
 }
 
 export function buildRecenterScript(center: LatLng): string {

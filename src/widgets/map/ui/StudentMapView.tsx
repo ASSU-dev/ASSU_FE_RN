@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { StoreMarker } from "@/entities/store";
@@ -64,6 +65,10 @@ interface StudentMapViewProps {
 	initialLng?: number;
 	initialStoreName?: string;
 	initialStoreImageUri?: string;
+	initialStoreBenefit?: string;
+	initialStoreTag?: string;
+	/** 같은 매장을 다시 검색해 선택했을 때도 이동과 카드를 재실행한다. */
+	initialSelectionKey?: string;
 	/** nearbyStores에 초기 매장이 없을 때 플로팅 카드 탭 */
 	onPinnedStorePress?: () => void;
 	onPinnedStoreCertifyPress?: () => void;
@@ -77,12 +82,16 @@ export function StudentMapView({
 	initialLng,
 	initialStoreName,
 	initialStoreImageUri,
+	initialStoreBenefit,
+	initialStoreTag,
+	initialSelectionKey,
 	onPinnedStorePress,
 	onPinnedStoreCertifyPress,
 }: StudentMapViewProps) {
 	const kakaoRef = useRef<KakaoMapHandle>(null);
 	const sheetRef = useRef<SnapBottomSheetRef>(null);
 	const suppressNextBoundsRef = useRef(false);
+	const lastSelectionRequestRef = useRef<string | null>(null);
 	const deliberatelyPannedRef = useRef(false);
 	const insets = useSafeAreaInsets();
 	const { center, myLocation, heading } = useUserLocation();
@@ -120,10 +129,49 @@ export function StudentMapView({
 	});
 	const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
 
-	const partnerMarkerStores = useMemo(
-		() => markerStores.filter((store) => store.hasPartner),
-		[markerStores],
-	);
+	const pinnedStore = useMemo<StoreMarker | null>(() => {
+		if (
+			!initialStoreId ||
+			initialLat === undefined ||
+			initialLng === undefined ||
+			!Number.isFinite(initialLat) ||
+			!Number.isFinite(initialLng) ||
+			Math.abs(initialLat) > 90 ||
+			Math.abs(initialLng) > 180
+		) {
+			return null;
+		}
+		return {
+			id: initialStoreId,
+			name: initialStoreName ?? "",
+			address: "",
+			latitude: initialLat,
+			longitude: initialLng,
+			hasPartner: true,
+			rate: 0,
+			imageUri: initialStoreImageUri,
+			benefit: initialStoreBenefit,
+			partnerships: initialStoreTag
+				? [{ adminName: initialStoreTag, benefits: [] }]
+				: undefined,
+		};
+	}, [
+		initialStoreId,
+		initialLat,
+		initialLng,
+		initialStoreName,
+		initialStoreImageUri,
+		initialStoreBenefit,
+		initialStoreTag,
+	]);
+	const partnerMarkerStores = useMemo(() => {
+		const stores = markerStores.filter((store) => store.hasPartner);
+		// 검색 매장은 현재 지도 범위/카테고리 밖이어도 선택 마커를 유지한다.
+		if (pinnedStore && !stores.some((store) => store.id === pinnedStore.id)) {
+			return [...stores, pinnedStore];
+		}
+		return stores;
+	}, [markerStores, pinnedStore]);
 	const partnerListStores = partnershipResponse?.result ?? [];
 	const selectedStore =
 		partnerMarkerStores.find((store) => store.id === selectedStoreId) ?? null;
@@ -133,13 +181,30 @@ export function StudentMapView({
 			setSelectedStoreId(null);
 	}, [selectedStore, selectedStoreId, initialStoreId]);
 
+	// 검색 선택과 지도 칩 선택이 같은 카드/시트/지도 이동 흐름을 사용한다.
+	const selectStore = useCallback(
+		(store: StoreMarker, refreshBounds: boolean) => {
+			setSelectedStoreId(store.id);
+			sheetRef.current?.snapToIndex(0);
+			suppressNextBoundsRef.current = !refreshBounds;
+			deliberatelyPannedRef.current = true;
+			kakaoRef.current?.panTo(store.latitude, store.longitude);
+		},
+		[],
+	);
+
 	useEffect(() => {
-		if (!initialStoreId || !initialLat || !initialLng) return;
-		setSelectedStoreId(initialStoreId);
-		sheetRef.current?.snapToIndex(0);
-		deliberatelyPannedRef.current = true;
-		kakaoRef.current?.panTo(initialLat, initialLng);
-	}, [initialStoreId, initialLat, initialLng]);
+		if (!pinnedStore) return;
+		const requestKey = JSON.stringify([
+			pinnedStore.id,
+			pinnedStore.latitude,
+			pinnedStore.longitude,
+			initialSelectionKey,
+		]);
+		if (lastSelectionRequestRef.current === requestKey) return;
+		lastSelectionRequestRef.current = requestKey;
+		selectStore(pinnedStore, true);
+	}, [pinnedStore, initialSelectionKey, selectStore]);
 
 	const mapMarkers = useMemo<KakaoMapMarker[]>(
 		() =>
@@ -167,14 +232,8 @@ export function StudentMapView({
 	// 마커 선택 시 시트를 최소(칩 행만)로 내려 플로팅 카드 공간을 확보한다.
 	// panTo 후 발생하는 idle → onRegionChange는 억제해 불필요한 재조회를 막는다.
 	const handleMarkerPress = (markerId: string) => {
-		setSelectedStoreId(markerId);
-		sheetRef.current?.snapToIndex(0);
 		const store = partnerMarkerStores.find((s) => s.id === markerId);
-		if (store) {
-			suppressNextBoundsRef.current = true;
-			deliberatelyPannedRef.current = true;
-			kakaoRef.current?.panTo(store.latitude, store.longitude);
-		}
+		if (store) selectStore(store, store.id === pinnedStore?.id);
 	};
 
 	// 지도 빈 곳 탭: 선택 카드만 닫고 시트 위치는 사용자가 둔 그대로 유지한다
@@ -267,7 +326,8 @@ export function StudentMapView({
 			/>
 			{selectedStore ||
 			(selectedStoreId === initialStoreId && initialStoreName) ? (
-				<View
+				<Animated.View
+					entering={FadeInDown.duration(220)}
 					className="absolute left-card-p right-card-p"
 					style={{ bottom: SNAP_MINI + SHEET_GAP }}
 				>
@@ -309,7 +369,7 @@ export function StudentMapView({
 								: (onPinnedStoreCertifyPress ?? (() => {}))
 						}
 					/>
-				</View>
+				</Animated.View>
 			) : null}
 			<SnapBottomSheet
 				ref={sheetRef}

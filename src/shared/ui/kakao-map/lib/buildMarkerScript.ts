@@ -14,7 +14,7 @@ export function buildMarkerScript(): string {
 	return `
     var storeMarkers = Object.create(null);
     var CATEGORY_MARKER_SVGS = ${categorySvgsJson};
-    var CLUSTER_RADIUS_PX = 48;
+    var CLUSTER_RADIUS_PX = 36;
     var storeData = [];
     var clusteringEnabled = false;
 
@@ -70,7 +70,7 @@ export function buildMarkerScript(): string {
         var key = 'store:' + String(markerData.id);
         var signature = JSON.stringify([
           markerData.latitude, markerData.longitude, markerData.name,
-          markerData.category, markerData.benefit, markerData.selected === true,
+          markerData.category, markerData.selected === true,
           markerData.categoryMarker === true, markerData.isPartnerMarker === true
         ]);
         retainStoreMarker(nextMarkers, key, signature, function() {
@@ -137,12 +137,6 @@ export function buildMarkerScript(): string {
         nameText.textContent = markerData.name;
         nameText.style.cssText = 'color:#040404;font-size:12px;font-weight:600;line-height:15px;text-shadow:0 0 3px ${canvas},0 0 3px ${canvas},0 0 3px ${canvas};';
         label.appendChild(nameText);
-        if (markerData.benefit) {
-          var benefitText = document.createElement('div');
-          benefitText.textContent = markerData.benefit;
-          benefitText.style.cssText = 'color:${primary};font-size:11px;font-weight:600;line-height:14px;text-shadow:0 0 3px ${canvas},0 0 3px ${canvas},0 0 3px ${canvas};';
-          label.appendChild(benefitText);
-        }
         container.appendChild(label);
       }
 

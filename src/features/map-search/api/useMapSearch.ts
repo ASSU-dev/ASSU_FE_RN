@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import type {
 	PopularStore,
@@ -9,6 +9,7 @@ import type { MapViewport, NearbyStoresFilter } from "../model/types";
 import {
 	fetchNearbyStores,
 	fetchPopularStores,
+	fetchSearchStoreLocation,
 	fetchSearchStores,
 } from "./mapSearchApi";
 
@@ -56,4 +57,8 @@ export function useNearbyStores(
 		},
 		staleTime: 1000 * 60,
 	});
+}
+
+export function useSearchStoreLocation() {
+	return useMutation({ mutationFn: fetchSearchStoreLocation });
 }

@@ -4,7 +4,7 @@ import type {
 	StoreMarker,
 } from "@/entities/store";
 import type { BaseResponse } from "@/shared/api";
-import { apiInstance } from "@/shared/api";
+import { apiInstance, getGetStoreDetailsApi } from "@/shared/api";
 import { SOONGSIL_VIEWPORT } from "@/shared/config/map";
 import {
 	getString,
@@ -122,4 +122,40 @@ export async function fetchNearbyStores(
 		.map(toStoreMarker)
 		.filter((marker): marker is StoreMarker => marker !== null);
 	return markers;
+}
+
+/** 검색 응답에 좌표가 없으면 기존 매장 조회 API로 보완한다. */
+export async function fetchSearchStoreLocation(store: SearchResultStore) {
+	let { latitude, longitude } = store;
+	if (!isValidStoreLocation(latitude, longitude)) {
+		const storeId = Number(store.storeId);
+		if (!Number.isSafeInteger(storeId) || storeId <= 0) {
+			throw new Error("매장 정보를 확인할 수 없습니다.");
+		}
+		const response = await getGetStoreDetailsApi().getStoreDetails(storeId);
+		if (response.isSuccess === false) {
+			throw new Error("매장 정보를 확인할 수 없습니다.");
+		}
+		latitude = response.result?.latitude;
+		longitude = response.result?.longitude;
+	}
+	if (
+		latitude === undefined ||
+		longitude === undefined ||
+		!isValidStoreLocation(latitude, longitude)
+	) {
+		throw new Error("매장 위치를 확인할 수 없습니다.");
+	}
+	return { ...store, latitude, longitude };
+}
+
+function isValidStoreLocation(latitude?: number, longitude?: number): boolean {
+	return (
+		latitude !== undefined &&
+		longitude !== undefined &&
+		Number.isFinite(latitude) &&
+		Number.isFinite(longitude) &&
+		Math.abs(latitude) <= 90 &&
+		Math.abs(longitude) <= 180
+	);
 }

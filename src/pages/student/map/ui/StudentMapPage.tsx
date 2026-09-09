@@ -17,12 +17,18 @@ export function StudentMapPage() {
 		preSelectLng,
 		preSelectName,
 		preSelectImageUri,
+		preSelectBenefit,
+		preSelectTag,
+		preSelectRequestId,
 	} = useLocalSearchParams<{
 		preSelectStoreId?: string;
 		preSelectLat?: string;
 		preSelectLng?: string;
 		preSelectName?: string;
 		preSelectImageUri?: string;
+		preSelectBenefit?: string;
+		preSelectTag?: string;
+		preSelectRequestId?: string;
 	}>();
 
 	const pinnedStoreId = preSelectStoreId ? Number(preSelectStoreId) : undefined;
@@ -32,7 +38,7 @@ export function StudentMapPage() {
 			<StudentMapView
 				onStorePress={(store) =>
 					router.push({
-						pathname: "/(protected)/student/store/[storeId]",
+						pathname: "/(protected)/student/store/[storeId]/detail",
 						params: { storeId: store.id, storeName: store.name },
 					})
 				}
@@ -47,11 +53,14 @@ export function StudentMapPage() {
 				initialLng={preSelectLng ? Number(preSelectLng) : undefined}
 				initialStoreName={preSelectName}
 				initialStoreImageUri={preSelectImageUri}
+				initialStoreBenefit={preSelectBenefit}
+				initialStoreTag={preSelectTag}
+				initialSelectionKey={preSelectRequestId}
 				onPinnedStorePress={
 					pinnedStoreId
 						? () =>
 								router.push({
-									pathname: "/(protected)/student/store/[storeId]",
+									pathname: "/(protected)/student/store/[storeId]/detail",
 									params: { storeId: pinnedStoreId, storeName: preSelectName },
 								})
 						: undefined
