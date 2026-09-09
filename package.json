@@ -12,7 +12,22 @@
 		"biome:fix": "biome check --write .",
 		"biome:format": "biome format . --write",
 		"icons": "node scripts/generate-icons.js",
-		"generate:api": "node scripts/generate-api.js"
+		"generate:api": "node scripts/generate-api.js",
+		"test": "jest",
+		"test:watch": "jest --watch",
+		"test:coverage": "jest --coverage"
+	},
+	"jest": {
+		"preset": "jest-expo",
+		"setupFilesAfterEnv": ["./jest.setup.ts"],
+		"testPathIgnorePatterns": ["/node_modules/", "/scripts/"],
+		"transformIgnorePatterns": [
+			"node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|react-navigation|@react-navigation/.*|nativewind|tailwindcss|react-native-svg|react-native-reanimated|react-native-gesture-handler|react-native-worklets)"
+		],
+		"moduleNameMapper": {
+			"^@/(.*)$": "<rootDir>/src/$1",
+			"\\.svg$": "<rootDir>/__mocks__/svgMock.tsx"
+		}
 	},
 	"dependencies": {
 		"@expo/vector-icons": "^15.0.3",
@@ -76,12 +91,16 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.3.14",
 		"@expo/ngrok": "4.1.0",
+		"@testing-library/react-native": "^14.0.1",
+		"@types/jest": "^30.0.0",
 		"@types/react": "~19.1.10",
 		"@types/uuid": "^11.0.0",
 		"babel-plugin-module-resolver": "^5.0.2",
 		"concurrently": "^9.2.1",
 		"eslint": "^9.25.0",
 		"eslint-config-expo": "~10.0.0",
+		"jest": "^30.5.1",
+		"jest-expo": "^57.0.5",
 		"lefthook": "^2.1.5",
 		"prettier-plugin-tailwindcss": "^0.7.2",
 		"react-native-svg-transformer": "^1.5.3",
