@@ -17,12 +17,13 @@ export function MapSearchBar({
 
 	return (
 		<View
-			className="absolute left-0 right-0 top-0 bg-canvas px-card-p pb-3"
-			style={{ ...shadows.neutral, paddingTop: insets.top + 12 }}
+			className="absolute left-0 right-0 top-0 px-card-p pb-3"
+			style={{ paddingTop: insets.top + 12 }}
 		>
 			<Pressable
 				onPress={onPress}
 				className="flex-row items-center gap-gutter rounded-[8px] bg-neutral p-gutter"
+				style={shadows.neutral}
 			>
 				<LocationIcon width={14} height={18} />
 				<Text className="font-regular text-sm leading-caption tracking-caption text-content-secondary">
