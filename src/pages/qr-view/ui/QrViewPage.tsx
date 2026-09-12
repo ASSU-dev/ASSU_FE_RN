@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as MediaLibrary from "expo-media-library";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useRef, useState } from "react";
-import { Alert, Pressable, Text, View } from "react-native";
+import { Alert, Platform, Pressable, Text, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ViewShot from "react-native-view-shot";
@@ -21,11 +21,13 @@ export function QrViewPage() {
 		if (saving) return;
 		setSaving(true);
 		try {
-			const { status } = await MediaLibrary.requestPermissionsAsync();
+			const { status } = await MediaLibrary.requestPermissionsAsync(
+				Platform.OS === "ios",
+			);
 			if (status !== "granted") {
 				Alert.alert(
 					"권한 필요",
-					"사진 저장을 위해 갤러리 접근 권한이 필요합니다.",
+					"제휴 QR 코드를 사진 보관함에 저장하려면 사진 저장 권한을 허용해 주세요.",
 				);
 				return;
 			}
