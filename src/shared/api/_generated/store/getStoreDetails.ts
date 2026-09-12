@@ -25,6 +25,7 @@ export interface GetStoreDetailsDTO {
 	phoneNumber?: string;
 	hasPartner?: boolean;
 	profileUrl?: string;
+	linkType?: "EXTERNAL" | null;
 }
 
 export const getAssuApi = () => {

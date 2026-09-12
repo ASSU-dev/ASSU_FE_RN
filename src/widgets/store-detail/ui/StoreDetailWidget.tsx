@@ -1,4 +1,5 @@
 import { router } from "expo-router";
+import { useEffect } from "react";
 import {
 	ActivityIndicator,
 	Pressable,
@@ -36,6 +37,14 @@ export function StoreDetailWidget({
 		isError,
 	} = useStoreDetailData({ storeId, fallbackName });
 
+	const isExternal = store?.linkType === "EXTERNAL";
+
+	useEffect(() => {
+		if (isExternal) {
+			router.replace("/(protected)/student/external-store-link");
+		}
+	}, [isExternal]);
+
 	const handleViewOnMap = () => {
 		if (!store?.latitude || !store?.longitude) return;
 		router.push({
@@ -64,11 +73,11 @@ export function StoreDetailWidget({
 	return (
 		<PageLayout
 			withTopInset
-			withBottomInset={false}
+			withBottomInset
 			contentContainerClassName="flex-1"
 			header={<AppTopBar title={title} titleAlign="left" />}
 		>
-			{isLoading ? (
+			{isLoading || isExternal ? (
 				<View className="flex-1 items-center justify-center">
 					<ActivityIndicator />
 				</View>
@@ -125,7 +134,7 @@ export function StoreDetailWidget({
 				</ScrollView>
 			)}
 
-			<View className="border-t border-neutral bg-canvas px-screen-m pb-8 pt-3">
+			<View className="border-t border-neutral bg-canvas px-screen-m pb-[4px] pt-3">
 				<MediumButton
 					onPress={handleCertify}
 					disabled={selectedBenefitId === null}

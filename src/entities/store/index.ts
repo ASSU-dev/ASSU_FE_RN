@@ -25,6 +25,7 @@ export type {
 	SearchResultStore,
 	Store,
 	StoreCategory,
+	StoreLinkType,
 	StoreMarker,
 	StorePartnership,
 	StudentStoreCardData,

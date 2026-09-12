@@ -1,3 +1,5 @@
+export type StoreLinkType = "EXTERNAL";
+
 export interface Store {
 	id: string;
 	name: string;
@@ -40,6 +42,7 @@ export interface StoreMarker extends Store {
 	partnershipId?: string;
 	partnershipStartDate?: string;
 	partnershipEndDate?: string;
+	linkType?: StoreLinkType | null;
 }
 
 export interface StudentStoreCardData extends Store {
@@ -84,6 +87,7 @@ export interface SearchResultStore {
 	partnershipId?: string;
 	partnershipStartDate?: string;
 	partnershipEndDate?: string;
+	linkType?: StoreLinkType | null;
 }
 
 export interface BaseResponse<T> {

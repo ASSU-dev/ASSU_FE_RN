@@ -41,7 +41,7 @@ export const TAB_CONFIG: Record<UserType, TabItem[]> = {
 		},
 		{
 			route: "map",
-			label: "맵",
+			label: "지도",
 			Icon: Location,
 		},
 		{
@@ -63,7 +63,7 @@ export const TAB_CONFIG: Record<UserType, TabItem[]> = {
 		},
 		{
 			route: "map",
-			label: "맵",
+			label: "지도",
 			Icon: Location,
 		},
 		{
@@ -92,7 +92,7 @@ export const TAB_CONFIG: Record<UserType, TabItem[]> = {
 		},
 		{
 			route: "map",
-			label: "맵",
+			label: "지도",
 			Icon: Location,
 		},
 		{

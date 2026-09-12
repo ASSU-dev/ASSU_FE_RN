@@ -55,6 +55,10 @@ const SOONGSIL_VIEWPORT: MapViewport = {
 	lat4: 37.4863,
 };
 
+function toLinkType(value: unknown): "EXTERNAL" | null {
+	return value === "EXTERNAL" ? "EXTERNAL" : null;
+}
+
 function isRecord(value: unknown): value is UnknownRecord {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -178,6 +182,7 @@ function toSearchResultStore(value: unknown): SearchResultStore | null {
 			"startDate",
 		]),
 		partnershipEndDate: getString(value, ["partnershipEndDate", "endDate"]),
+		linkType: toLinkType(value.linkType),
 	};
 }
 
@@ -328,6 +333,7 @@ function toStoreMarker(value: unknown): StoreMarker | null {
 		partnershipId: getString(value, ["partnershipId"]),
 		partnershipStartDate: getString(value, ["partnershipStartDate"]),
 		partnershipEndDate: getString(value, ["partnershipEndDate"]),
+		linkType: toLinkType(value.linkType),
 	};
 }
 
