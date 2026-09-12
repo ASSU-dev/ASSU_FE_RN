@@ -1,5 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
 import { useReviewDraftStore } from "./useReviewDraftStore";
 
 const MAX_REVIEW_IMAGES = 3;
@@ -12,14 +12,17 @@ export function useReviewImagePicker() {
 		const remainingCount = MAX_REVIEW_IMAGES - images.length;
 		if (remainingCount <= 0) return;
 
-		const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+		// iOS의 시스템 사진 선택기는 보관함 권한 없이 선택한 사진만 전달합니다.
+		if (Platform.OS !== "ios") {
+			const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-		if (!permission.granted) {
-			Alert.alert(
-				"사진 접근 권한 필요",
-				"리뷰 사진을 선택하려면 사진 접근 권한을 허용해 주세요.",
-			);
-			return;
+			if (!permission.granted) {
+				Alert.alert(
+					"사진 접근 권한 필요",
+					"리뷰 사진을 선택하려면 사진 접근 권한을 허용해 주세요.",
+				);
+				return;
+			}
 		}
 
 		const result = await ImagePicker.launchImageLibraryAsync({
