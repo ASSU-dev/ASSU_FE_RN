@@ -1,10 +1,7 @@
-export type {
-	MapViewport,
-	NearbyStoresFilter,
-} from "./model/useMapSearch";
 export {
 	useNearbyStores,
-	usePlaceAddressSearch,
 	usePopularStores,
+	useSearchStoreLocation,
 	useSearchStores,
-} from "./model/useMapSearch";
+} from "./api/useMapSearch";
+export type { MapViewport, NearbyStoresFilter } from "./model/types";

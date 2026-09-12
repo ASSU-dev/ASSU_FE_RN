@@ -1,9 +1,5 @@
+import type { LatLng } from "@/shared/types/map";
 import type { StoreMarker } from "../model/types";
-
-interface LatLng {
-	lat: number;
-	lng: number;
-}
 
 const EARTH_RADIUS_KM = 6371;
 

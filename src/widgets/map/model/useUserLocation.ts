@@ -1,11 +1,12 @@
 import * as Location from "expo-location";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
+import { Alert, Linking } from "react-native";
 
-const SOONGSIL = { lat: 37.4963, lng: 126.9572 };
+import { SOONGSIL } from "@/shared/config/map";
+import type { LatLng } from "@/shared/types/map";
+
 const HEADING_THRESHOLD_DEG = 5;
-
-type LatLng = { lat: number; lng: number };
 
 export function useUserLocation() {
 	const [center, setCenter] = useState<LatLng | null>(null);
@@ -20,11 +21,42 @@ export function useUserLocation() {
 			let headingSub: Location.LocationSubscription | undefined;
 
 			(async () => {
-				const { status } = await Location.requestForegroundPermissionsAsync();
+				let permission = await Location.getForegroundPermissionsAsync();
 				if (!isActive) return;
 
-				if (status !== "granted") {
+				if (permission.status !== "granted" && permission.canAskAgain) {
+					permission = await Location.requestForegroundPermissionsAsync();
+					if (!isActive) return;
+				}
+
+				if (permission.status !== "granted") {
 					setCenter(SOONGSIL);
+					setMyLocation(null);
+					setHeading(null);
+					lastHeadingRef.current = null;
+
+					if (!permission.canAskAgain) {
+						Alert.alert(
+							"위치 권한 필요",
+							"현재 위치를 표시하려면 설정에서 위치 권한을 허용해 주세요. 변경 후 지도에 다시 진입하면 적용됩니다.",
+							[
+								{ text: "취소", style: "cancel" },
+								{
+									text: "설정 열기",
+									onPress: () => {
+										if (!isActive) return;
+										void Linking.openSettings().catch(() => {
+											if (!isActive) return;
+											Alert.alert(
+												"설정 열기 실패",
+												"기기 설정에서 ASSU의 위치 권한을 직접 변경해 주세요.",
+											);
+										});
+									},
+								},
+							],
+						);
+					}
 					return;
 				}
 

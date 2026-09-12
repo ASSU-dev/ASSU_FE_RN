@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { usePlaceAddressSearch } from "@/features/map-search";
+import { usePlaceAddressSearch } from "@/entities/place";
 import { useDebounce } from "@/shared/lib/hooks/useDebounce";
 import type { AddressSearchItem } from "@/shared/ui/address-search/types";
 
